@@ -143,6 +143,43 @@ padding: 10px;
     font-weight: bold;
     
   }
+  /* Hide print footer on screen */
+.no-screen {
+  display: none;
+}
+
+/* Show print footer when printing */
+@media print {
+  .no-screen {
+    display: block;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 11px;
+    color: #555;
+    padding: 4px;
+    border-top: 1px solid #ccc;
+    background: white;
+  }
+
+  /* Page numbers using CSS counter */
+  @page {
+    size: A4;
+    margin: 1.2cm 0.8cm 2.5cm 0.8cm; /* extra bottom margin for footer */
+  }
+
+  body {
+    counter-reset: page;
+  }
+
+  /* Insert page number */
+  .no-screen::after {
+    counter-increment: page;
+    content: "الصفحة " counter(page) " من " counter(pages) " | تاريخ الطباعة: " attr(data-date) " | الوقت: " attr(data-time);
+  }
+}
   </style>
 </head>
 <body>
@@ -155,13 +192,14 @@ padding: 10px;
       
       التاريخ: 
       <input type="date" id="recordDate" style="text-align: center; direction: ltr; padding: 2px 6px;" />
-  
-    <button id="bck" onclick="window.location.href='index.html'">رجوع الي الرئيسية</button>
- 
+
+    <button id="bck" class="no-print" onclick="window.location.href='index.html'">رجوع الي الرئيسية</button>
+ <button class="btn-print" onclick="printWithFooter()">طباعة التقرير</button>
    </div>
       <!-- Add this button inside your no-print container -->
-<button type="button" class="btn-search" onclick="openSearchPage()" style="background:#388e3c;color:white;padding:6px 10px;border-radius:4px;align-self:end;"> بحث متقدم</button>
-  </div>
+<button type="button" class="btn-search no-print" onclick="openSearchPage()" style="background:#388e3c;color:white;padding:6px 10px;border-radius:4px;align-self:end;"> بحث متقدم</button>
+<div id="print-footer" class="no-screen"></div>  
+</div>
 
 
    
@@ -220,6 +258,33 @@ function updateOfficeDropdowns() {
   populateDatalist('sourceOfficeList', sourceOffices);
   populateDatalist('destOfficeList', destOffices);
 }
+function printWithFooter() {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('ar-EG'); // Arabic date format
+  const timeStr = now.toLocaleTimeString('ar-EG', { hour12: false });
+
+  const footer = document.getElementById('print-footer');
+  // Store date/time as data attributes for CSS
+  footer.setAttribute('data-date', dateStr);
+  footer.setAttribute('data-time', timeStr);
+
+  // Alternative: inject visible text (more reliable for page count)
+  footer.innerHTML = `
+   <div style="font-size:11px;color:#555;padding:4px;border-top:1px solid #ccc;">
+  تاريخ الطباعة: ٣ يناير ٢٠٢٦ | الوقت: ١٤:٣٠:٤٥
+<\/div>
+  `;
+
+  // Optional: Add page numbers manually if needed (advanced)
+  // For simplicity, we rely on browser page breaks + above info
+
+  window.print();
+
+  // Clean up after print (hide footer)
+  setTimeout(() => {
+    footer.innerHTML = '';
+  }, 1000);
+}
 function openSearchPage() {
   const date = document.getElementById('recordDate').value;
   const office = document.getElementById('sourceOffice').value;
@@ -252,9 +317,9 @@ function loadRecords() {
   }
   renderTable(records);
   updateOfficeDropdowns();
-}function loadRecords() {
+}
+function loadRecords() {
   let records = JSON.parse(localStorage.getItem('barcodes')) || [];
-
   // Apply search filter (text search)
   const search = document.getElementById('searchInput').value.trim().toLowerCase();
   if (search) {
@@ -265,14 +330,12 @@ function loadRecords() {
       (r.destOffice && r.destOffice.toLowerCase().includes(search))
     );
   }
-
   // ✅ CRITICAL: Filter by current date AND current office
   records = records.filter(r => {
     const matchesDate = !CURRENT_FILTER_DATE || r.date === CURRENT_FILTER_DATE;
     const matchesOffice = !CURRENT_FILTER_OFFICE || (r.sourceOffice === CURRENT_FILTER_OFFICE);
     return matchesDate && matchesOffice;
   });
-
   renderTable(records);
   updateOfficeDropdowns(); // Keeps datalist updated (for dest office, etc.)
 }
