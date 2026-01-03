@@ -48,7 +48,7 @@
       cursor: pointer;
       font-size: 13px;
     }
-    .btn-print { background: #2e76d2; color: white; }
+  
     .btn-basic { background: #7b1fa2; color: white; }
     input, select {
       padding: 6px 8px;
@@ -185,13 +185,13 @@ padding: 10px;
     color: white;
     border: none;
     border-radius: 20px;
-    padding: 8px 16px;
+    padding: 4px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: bold;
-    width: 250px;
+    width: 100px;
     height: 50px;
-    font-size: 18px;
+   float: left;
   }
   </style>
 </head>
@@ -228,8 +228,10 @@ padding: 10px;
 <datalist id="destOfficeList"></datalist>
       <div style="display:flex;gap:5px">
         <button type="button" onclick="saveRecord(true)" style="background:#1976d2;color:white;padding:6px 10px;border-radius:4px">حفظ</button>
+     <button class="no-print" id="prntt" onclick="printWithFooter()">طباعة التقرير</button>
+       
       </div>
-       <button class="no-print" id="prntt" onclick="printWithFooter()">طباعة التقرير</button>
+       
     </div>
 
 <div style="height: 3px; width: 100%; background-color: #191616;"></div>  
